@@ -6,7 +6,10 @@
     "imageRepo": "duluca/localcast-weather",
     "imageName": "localcast-weather",
     "imagePort": "8080",
-    "internalContainerPort": "3000"
+    "internalContainerPort": "3000",
+    "awsRegion": "your_aws_region",
+    "awsEcsCluster": "your_ecs_cluster_name",
+    "awsService": "your_apps_ecs_service_name"
   },
   "scripts": {
     "ng": "ng",
@@ -50,7 +53,13 @@
     "lint:ts:fix": "tslint --config tslint.json --fix --project . -e \"**/{test,polyfills}.ts\"",
     "lint:tsc": "tsc --noEmit --skipLibCheck",
     "docker:stop": "cross-conf-env docker stop $npm_package_config_imageName || true",
-    "docker:open": "sleep 2 && cross-conf-env open-cli http://localhost:$npm_package_config_imagePort"
+    "docker:open": "sleep 2 && cross-conf-env open-cli http://localhost:$npm_package_config_imagePort",
+    "aws:login:win": "cross-conf-env aws ecr get-login --no-include-email --region $npm_package_config_awsRegion > dockerLogin.cmd && call dockerLogin.cmd && del dockerLogin.cmd",
+    "aws:login:mac": "eval $(aws ecr get-login --no-include-email --region $npm_package_config_awsRegion)",
+    "aws:login": "run-p -cs aws:login:win aws:login:mac",
+    "aws:deploy": "cross-conf-env docker run --env-file ./.env silintl/ecs-deploy -c $npm_package_config_awsEcsCluster -n $npm_package_config_awsService -i $npm_package_config_imageRepo:latest -r $npm_package_config_awsRegion --timeout 1000",
+    "aws:release": "run-s -cs aws:login docker:publish aws:deploy",
+    "aws:publish:compose": "cross-conf-env ecs-cli compose --file docker-compose.aws.yml -p $npm_package_name -c $npm_package_config_awsEcsCluster -r $npm_package_config_awsRegion create"
   },
   "private": true,
   "dependencies": {
