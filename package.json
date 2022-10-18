@@ -22,6 +22,8 @@
     "lint:fix": "run-s lint:ts:fix lint:tsc",
     "e2e": "ng e2e local-weather-app",
     "build:prod": "ng build --configuration production",
+    "prenow:publish": "npm run build:prod",
+    "now:publish": "now --platform-version 2 dist/local-weather-app",
     "predocker:build": "npm run build",
     "docker:build": "cross-conf-env docker image build . -t $npm_package_config_imageRepo:$npm_package_version",
     "postdocker:build": "npm run docker:tag",
